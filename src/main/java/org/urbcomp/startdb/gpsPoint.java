@@ -52,4 +52,9 @@ public class gpsPoint  {
     public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
+
+    boolean equals(gpsPoint point){
+        return this.getId() == point.getId() && this.getTimestamp() == point.getTimestamp()
+                && this.getLongitude() == point.getLongitude() && this.getLatitude() == point.getLatitude();
+    }
 }
