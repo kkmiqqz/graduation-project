@@ -1,4 +1,4 @@
-package org.urbcomp.startdb.serializer.utils;
+package org.urbcomp.startdb.simplificator.utils;
 
 import org.urbcomp.startdb.gpsPoint;
 
