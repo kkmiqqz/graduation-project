@@ -13,9 +13,9 @@ public class TestSimplification {
     @Test
     public  void testAll(){
         //metric
-        double compressTime = 0.0;
+        double simplifyTime = 0.0;
         int originNum = 0;
-        int comNum = 0;
+        int simpNum = 0;
 
         //简化器
         TD_TR simplificator = new TD_TR(100.0);
@@ -40,14 +40,14 @@ public class TestSimplification {
                     while ((gpsPoints = br.nextBlock()) != null) {
 
                         //简化
-                        double sComTime = System.currentTimeMillis();
+                        double sSimpTime = System.currentTimeMillis();
                         //Set<Integer> comPoints = simplificator.compress(0, gpsPoints.size() - 1, gpsPoints);
-                        List<gpsPoint> comPoints = simplificator.simplify(gpsPoints);
-                        double eComTime = System.currentTimeMillis();
+                        List<gpsPoint> simpPoints = simplificator.simplify(gpsPoints);
+                        double eSimpTime = System.currentTimeMillis();
 
-                        compressTime += eComTime - sComTime;
+                        simplifyTime += eSimpTime - sSimpTime;
                         originNum += gpsPoints.size();
-                        comNum += comPoints.size();
+                        simpNum += simpPoints.size();
 
 //                        //解压缩
 //                        double sDecTime = System.currentTimeMillis();
@@ -71,9 +71,9 @@ public class TestSimplification {
 
             }
         }
-        System.out.println("comNum: " + comNum);
+        System.out.println("comNum: " + simpNum);
         System.out.println("originNum: " + originNum);
-        System.out.println("简化率：" + (double)comNum/originNum);
-        System.out.println("简化时间：" + compressTime + "ms");
+        System.out.println("简化率：" + (double)simpNum/originNum);
+        System.out.println("简化时间：" + simplifyTime + "ms");
     }
 }

@@ -51,6 +51,15 @@ public class ElfOriginSerializer {
        Uid = uidList.get(0); //同一轨迹相同，只记录一个
     }
 
+    public byte[] getTimestream(){
+        return Timestream;
+    }
+    public byte[] getLonstream(){
+        return Lonstream;
+    }
+    public byte[] getLatstream(){
+        return Latstream;
+    }
     public long getByteSize(){
         return Timestream.length + Lonstream.length + Latstream.length + Uid.length();
     }

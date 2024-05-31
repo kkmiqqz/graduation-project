@@ -99,11 +99,15 @@ public class DeltaOfDelta {
         ByteArrayInputStream input = new ByteArrayInputStream(compressedData);
         List<Long> deltaOfDeltas = new ArrayList<>();
 
+        //有问题，deltaOfDeltas size为1，代解决
+
         // 解码变长编码字节流
         long value;
         while ((value = readVarLong(input)) != Long.MIN_VALUE) {
             deltaOfDeltas.add(value);
         }
+
+        //System.out.println("deltaOfDeltas size: " + deltaOfDeltas.size());
 
         // 重建 Delta 数列
         long[] deltas = new long[deltaOfDeltas.size()];
@@ -118,10 +122,25 @@ public class DeltaOfDelta {
         List<Long> originalData = new ArrayList<>();
         if(deltas.length != 0){
             originalData.add(deltas[0]);
-            for (int i = 1; i < originalData.size(); i++) {
-                originalData.add(originalData.get(i - 1) + deltas[i]) ;
+            for (int i = 1; i < deltas.length; i++) {
+                long pre = originalData.get(i - 1);
+                originalData.add(pre + deltas[i]) ;
             }
         }
+//        // 重建原始数列
+//        long[] originalData = new long[deltas.length];
+//        if(deltas.length != 0){
+//            originalData[0] = deltas[0];
+//            for (int i = 1; i < originalData.length; i++) {
+//                originalData[i] = originalData[i - 1] + deltas[i];
+//            }
+//        }
+//
+//        List<Long> res = new ArrayList<>();
+//        for(long val : originalData){
+//            res.add(val);
+//        }
+        //System.out.println("originalData size: " + originalData.size());
 
         return originalData;
     }
@@ -152,23 +171,23 @@ public class DeltaOfDelta {
         throw new RuntimeException("Malformed variable-length integer");
     }
 
-//    public static void main(String[] args) {
-//        try {
-//            long[] timestamps = {1000, 1010, 1020, 1040, 1080, 1100};
-//            //compress
-//            byte[] compressedData = compress(timestamps);
-//            System.out.println("Compressed Data Length: " + compressedData.length);
-//            System.out.println("Compressed Data size: " + compressedData.length);
-////            for (byte b : compressedData) {
-////                System.out.print((b & 0xFF) + " ");
-////            }
-//            //decompress
-//            long[] decompressedTime = decompress(compressedData);
-//            for(long data : decompressedTime){
-//                System.out.println(data);
+    public static void main(String[] args) {
+        try {
+            long[] timestamps = {1000, 1010, 1020, 1040, 1080, 1100};
+            //compress
+            byte[] compressedData = compress(timestamps);
+            System.out.println("Compressed Data Length: " + compressedData.length);
+            System.out.println("Compressed Data size: " + compressedData.length);
+//            for (byte b : compressedData) {
+//                System.out.print((b & 0xFF) + " ");
 //            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
+            //decompress
+            List<Long> decompressedTime = decompress(compressedData);
+            for(long data : decompressedTime){
+                System.out.println(data);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
