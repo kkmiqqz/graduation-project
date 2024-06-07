@@ -4,7 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
+import java.util.Random;
 
 public class DeltaOfDelta {
 
@@ -97,6 +99,9 @@ public class DeltaOfDelta {
 
     public static List<Long> decompress(byte[] compressedData) throws IOException {
         ByteArrayInputStream input = new ByteArrayInputStream(compressedData);
+        // 验证 ByteArrayInputStream 的可用字节数
+        //System.out.println("Available bytes: " + input.available());
+
         List<Long> deltaOfDeltas = new ArrayList<>();
 
         //有问题，deltaOfDeltas size为1，代解决
@@ -127,19 +132,7 @@ public class DeltaOfDelta {
                 originalData.add(pre + deltas[i]) ;
             }
         }
-//        // 重建原始数列
-//        long[] originalData = new long[deltas.length];
-//        if(deltas.length != 0){
-//            originalData[0] = deltas[0];
-//            for (int i = 1; i < originalData.length; i++) {
-//                originalData[i] = originalData[i - 1] + deltas[i];
-//            }
-//        }
-//
-//        List<Long> res = new ArrayList<>();
-//        for(long val : originalData){
-//            res.add(val);
-//        }
+
         //System.out.println("originalData size: " + originalData.size());
 
         return originalData;
@@ -158,8 +151,9 @@ public class DeltaOfDelta {
         long result = 0;
         int shift = 0;
         while (shift < 64) {
-            final byte b = (byte) in.read();
-            if (b == -1) { // End of stream
+            //final byte b = (byte) in.read();
+            int b = in.read(); //使用int可以避免读取到值为-1的byte时造成的提前结束
+            if (b == -1) { // End of stream，流中数据读取完时，返回-1
                 return Long.MIN_VALUE;
             }
             result |= (long)(b & 0x7F) << shift;
@@ -173,19 +167,24 @@ public class DeltaOfDelta {
 
     public static void main(String[] args) {
         try {
-            long[] timestamps = {1000, 1010, 1020, 1040, 1080, 1100};
+            // 创建一个长度为1000的long数组
+            long[] timestamps = new long[2000];
+            // 创建一个Random对象
+            Random random = new Random();
+            // 循环赋值随机数
+            for (int i = 0; i < timestamps.length; i++) {
+                timestamps[i] = random.nextLong() + 1;
+            }
+
             //compress
             byte[] compressedData = compress(timestamps);
             System.out.println("Compressed Data Length: " + compressedData.length);
-            System.out.println("Compressed Data size: " + compressedData.length);
-//            for (byte b : compressedData) {
-//                System.out.print((b & 0xFF) + " ");
-//            }
+
             //decompress
             List<Long> decompressedTime = decompress(compressedData);
-            for(long data : decompressedTime){
-                System.out.println(data);
-            }
+//            for(long data : decompressedTime){
+//                System.out.println(data);
+//            }
         } catch (IOException e) {
             e.printStackTrace();
         }

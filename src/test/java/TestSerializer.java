@@ -15,6 +15,7 @@ public class TestSerializer {
 
     //数据集
     String inputFileName = "src/main/resources/T-drive";
+    private String dataName = "T-drive";
 
     @Test
     public void testall(){
@@ -42,7 +43,7 @@ public class TestSerializer {
                     String filename = file.getName();
                     System.out.println("Reading file : " + file.getName());
 
-                    try (GPSBlockReader br = new GPSBlockReader(inputFileName + "/" + filename, BLOCK_SIZE)) {
+                    try (GPSBlockReader br = new GPSBlockReader(inputFileName + "/" + filename, BLOCK_SIZE, dataName)) {
                         List<gpsPoint> gpsPoints;
 
                         while ((gpsPoints = br.nextBlock()) != null) {

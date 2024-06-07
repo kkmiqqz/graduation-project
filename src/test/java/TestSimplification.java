@@ -1,7 +1,7 @@
 import org.junit.Test;
 import org.urbcomp.startdb.gpsPoint;
 import org.urbcomp.startdb.simplificator.TD_TR;
-import org.urbcomp.startdb.utils.GPSBlockReader;
+import utils.GPSBlockReader;
 
 import java.io.File;
 import java.util.List;
@@ -9,6 +9,7 @@ import java.util.List;
 public class TestSimplification {
     //数据集
     String inputFileName = "src/main/resources/T-drive";
+    private String dataName = "T-drive";
 
     @Test
     public  void testAll(){
@@ -34,7 +35,7 @@ public class TestSimplification {
                 String filename = file.getName();
                 System.out.println("Reading file : " + file.getName());
 
-                try (GPSBlockReader br = new GPSBlockReader(inputFileName + "/" + filename, 1000)) {
+                try (GPSBlockReader br = new GPSBlockReader(inputFileName + "/" + filename, 1000, dataName)) {
                     List<gpsPoint> gpsPoints;
 
                     while ((gpsPoints = br.nextBlock()) != null) {

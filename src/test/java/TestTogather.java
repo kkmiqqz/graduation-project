@@ -17,7 +17,9 @@ public class TestTogather {
     private static final int BLOCK_SIZE = 1000;
 
     //数据集
-    private String inputFileName = "src/main/resources/T-drive";
+    //private String inputFileName = "src/main/resources/T-drive";
+    private String inputFileName = "src/main/resources/chengdu";
+    private String dataName = "chengdu";
 
     @Test
     public void testAll(){
@@ -27,7 +29,7 @@ public class TestTogather {
     @Test
     public void testTD_TRandElfOrigin(){
 
-        for(double epsi = 10; epsi <=100; epsi += 10){
+        for(double epsi = 10; epsi <= 10; epsi += 10){
             //metric
             double simplifyTime = 0.0;
             int originNum = 0;
@@ -58,7 +60,7 @@ public class TestTogather {
                     String filename = file.getName();
                     //System.out.println("Reading file : " + file.getName());
 
-                    try (GPSBlockReader br = new GPSBlockReader(inputFileName + "/" + filename, BLOCK_SIZE)) {
+                    try (GPSBlockReader br = new GPSBlockReader(inputFileName + "/" + filename, BLOCK_SIZE, dataName)) {
                         List<gpsPoint> gpsPoints;
 
                         while ((gpsPoints = br.nextBlock()) != null) {
@@ -118,9 +120,9 @@ public class TestTogather {
                             //System.out.println("originSize: " + gpsPoints.size());
                             //System.out.println("decompressSize: " + deserializer.getSize());
                             //时间校验
-//                        if(!timestamp.equals(TimeList)) {
-//                            System.out.println("time wrong!!!");
-//                        }
+                            if(!timestamp.equals(TimeList)) {
+                                System.out.println("time wrong!!!");
+                            }
                             //经纬度校验
                             if(!longitude.equals(LonList)){
                                 System.out.println("lon wrong!!!");
