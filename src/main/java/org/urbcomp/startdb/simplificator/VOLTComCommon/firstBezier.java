@@ -3,22 +3,19 @@ package org.urbcomp.startdb.simplificator.VOLTComCommon;
 import org.urbcomp.startdb.gpsPoint;
 
 public class firstBezier extends AbstractFunction {
+    public firstBezier(gpsPoint pstart, gpsPoint pend){
+        Pstart = pstart;
+        Pend = pend;
+    }
 
     @Override
-    public gpsPoint estimate(gpsPoint... variables) {
-        if (variables.length != 3) {
-            throw new IllegalArgumentException("FirstOrderFunction requires exactly 2 variables.");
-        }
-
-        gpsPoint s = variables[0];
-        gpsPoint e = variables[1];
-        gpsPoint next = variables[2];
-        double t = (next.getTimestamp() - s.getTimestamp()) / (e.getTimestamp() - s.getTimestamp());
+    public gpsPoint estimate(long time) {
+        double t = (double) (time - Pstart.getTimestamp()) / (Pend.getTimestamp() - Pstart.getTimestamp());
 
         gpsPoint estPoint = new gpsPoint();
         //
-        double estLat = (1 - t) * s.getLatitude() + t * e.getLatitude();
-        double estLon = (1 - t) * s.getLongitude() + t * e.getLongitude();
+        double estLat = (1 - t) * Pstart.getLatitude() + t * Pend.getLatitude();
+        double estLon = (1 - t) * Pstart.getLongitude() + t * Pend.getLongitude();
         estPoint.setLatitude(estLat);
         estPoint.setLongitude(estLon);
 

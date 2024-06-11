@@ -35,8 +35,11 @@ public class GPSBlockReader implements Closeable {
             case "T-drive" :
                 parseTdrive(gpsPoints);
                 break;
-            case "chengdu" :
+            case "Chengdu" :
                 parseChengdu(gpsPoints);
+                break;
+            case "Geolife" :
+                parseGeolife(gpsPoints);
                 break;
             default :
                 System.out.println("Invalid dataset");
@@ -116,6 +119,34 @@ public class GPSBlockReader implements Closeable {
         }
     }
 
+    /**
+     * 前6行没用，后续格式：39.998875,116.324514,0,492,39766.4268055556,2008-11-14,10:14:36
+     * @param gpsPoints
+     * @throws IOException
+     * @throws ParseException
+     */
+    public void parseGeolife(List<gpsPoint> gpsPoints) throws IOException, ParseException {
+        int i = 0;
+        String line;
+        String id = null;
+        while (i < blockSize && (line = br.readLine()) != null) {
+            String[] values = line.split(",");
+            if(values.length == 7) {
+                gpsPoint gpsPoint = new gpsPoint(
+                        "Uid",
+                        TdriveDateFormat.parse(values[5] + " " + values[6]).getTime(),
+                        Double.parseDouble(values[1]),
+                        Double.parseDouble(values[0])
+                );
+                gpsPoints.add(gpsPoint);
+                i++;
+            }
+        }
+
+        if (i < blockSize) {
+            end = true;
+        }
+    }
 
     public List<Float> nextSingleBlock() throws IOException {
         if (end) {

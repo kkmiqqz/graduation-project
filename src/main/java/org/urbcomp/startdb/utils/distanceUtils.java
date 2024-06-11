@@ -2,7 +2,7 @@ package org.urbcomp.startdb.utils;
 
 import org.urbcomp.startdb.gpsPoint;
 
-public class sedUtils {
+public class distanceUtils {
     // 地球半径常量，单位为米
     private static final double EARTH_RADIUS = 6371393.0;
     public static double calcSED(gpsPoint s, gpsPoint m, gpsPoint e){
@@ -12,7 +12,7 @@ public class sedUtils {
         return haversine(lat, lon, m.getLatitude(), m.getLongitude());
     }
 
-    private static double haversine(double lat1, double lon1, double lat2, double lon2) {
+    public static double haversine(double lat1, double lon1, double lat2, double lon2) {
         // 将经纬度从度数转换为弧度
         double lat1Rad = Math.toRadians(lat1);
         double lon1Rad = Math.toRadians(lon1);

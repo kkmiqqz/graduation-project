@@ -1,6 +1,6 @@
 package org.urbcomp.startdb.simplificator;
 
-import org.urbcomp.startdb.utils.sedUtils;
+import org.urbcomp.startdb.utils.distanceUtils;
 import org.urbcomp.startdb.gpsPoint;
 
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public class TD_TR implements ISimplificator{
         int index = start;
 
         for (int i = start + 1; i < end; i++) {
-            double d = sedUtils.calcSED(traj.get(start), traj.get(i), traj.get(end));
+            double d = distanceUtils.calcSED(traj.get(start), traj.get(i), traj.get(end));
             if (d > sedMax) {
                 index = i;
                 sedMax = d;

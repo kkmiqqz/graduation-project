@@ -19,7 +19,7 @@ public class TestTogather {
     //数据集
     //private String inputFileName = "src/main/resources/T-drive";
     private String inputFileName = "src/main/resources/chengdu";
-    private String dataName = "chengdu";
+    private String dataName = "Chengdu";
 
     @Test
     public void testAll(){
@@ -66,7 +66,6 @@ public class TestTogather {
                         while ((gpsPoints = br.nextBlock()) != null) {
                             //简化
                             double sSimpTime = System.currentTimeMillis();
-                            //Set<Integer> comPoints = simplificator.compress(0, gpsPoints.size() - 1, gpsPoints);
                             List<gpsPoint> simpPoints = simplificator.simplify(gpsPoints);
                             double eSimpTime = System.currentTimeMillis();
 
@@ -89,6 +88,7 @@ public class TestTogather {
                             double eComTime = System.currentTimeMillis();
 
                             compressTime += eComTime - sComTime;
+
                             //不考虑uid
                             compressedByteSize += serializer.getByteSize();
                             originByteSize += simpPoints.size()*(24);
@@ -113,12 +113,6 @@ public class TestTogather {
                             List<Long> timestamp = deserializer.getTimestamp();
                             List<Double> longitude = deserializer.getLongitude();
                             List<Double> latitude = deserializer.getLatitude();
-//                        System.out.println(timestamp.size());
-//                        System.out.println(longitude.size());
-//                        System.out.println(latitude.size());
-
-                            //System.out.println("originSize: " + gpsPoints.size());
-                            //System.out.println("decompressSize: " + deserializer.getSize());
                             //时间校验
                             if(!timestamp.equals(TimeList)) {
                                 System.out.println("time wrong!!!");
@@ -136,12 +130,9 @@ public class TestTogather {
                     } catch (Exception e) {
                         throw new RuntimeException(filename, e);
                     }
-                    //
                 }
                 //System.out.println();
             }
-
-            //压缩方式
 
             //打印结果：压缩率、压缩时间、解压缩时间
             System.out.println("epsilon: " + epsi);
@@ -151,7 +142,7 @@ public class TestTogather {
             System.out.println("originNum: " + originNum);
             System.out.println("简化率：" + (double)simpNum/originNum);
 
-            System.out.println("compressTime: " + compressTime + " ms");
+            System.out.println("压缩时间: " + compressTime + " ms");
             System.out.println("decompressTime: " + decompressTime + " ms");
             System.out.println("压缩率：" + (double)(compressedByteSize)/(originByteSize));
 

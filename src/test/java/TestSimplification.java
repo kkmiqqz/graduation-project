@@ -1,6 +1,9 @@
 import org.junit.Test;
 import org.urbcomp.startdb.gpsPoint;
+import org.urbcomp.startdb.simplificator.ISimplificator;
 import org.urbcomp.startdb.simplificator.TD_TR;
+import org.urbcomp.startdb.simplificator.VOLTCom;
+import org.urbcomp.startdb.simplificator.VOLTComCommon.vector;
 import utils.GPSBlockReader;
 
 import java.io.File;
@@ -8,11 +11,15 @@ import java.util.List;
 
 public class TestSimplification {
     //数据集
-    String inputFileName = "src/main/resources/T-drive";
-    private String dataName = "T-drive";
+    String inputFileName = "src/main/resources/Geolife";
+    private String dataName = "Geolife";
 
     @Test
-    public  void testAll(){
+    public void testAll(){
+
+    }
+    @Test
+    public void testTD_TR(){
         //metric
         double simplifyTime = 0.0;
         int originNum = 0;
@@ -76,5 +83,61 @@ public class TestSimplification {
         System.out.println("originNum: " + originNum);
         System.out.println("简化率：" + (double)simpNum/originNum);
         System.out.println("简化时间：" + simplifyTime + "ms");
+    }
+
+    @Test
+    public void testVOLTCom() {
+        for(double epsi = 10.0; epsi <= 100.0; epsi += 10.0) {
+
+            //metric
+            double simplifyTime = 0.0;
+            int originSize = 0;
+            int simpSize = 0;
+
+            //简化器
+            VOLTCom simplificator = new VOLTCom(epsi);
+
+            //读取文件
+            File folder = new File(inputFileName);
+            File[] files = folder.listFiles();
+
+            if (files == null) {
+                System.out.println("file is empty");
+                return;
+            }
+
+            for (File file : files) {
+                if (file.isFile()) {
+                    String filename = file.getName();
+                    //System.out.println("Reading file : " + file.getName());
+
+                    try (GPSBlockReader br = new GPSBlockReader(inputFileName + "/" + filename, 1000, dataName)) {
+                        List<gpsPoint> gpsPoints;
+
+                        while ((gpsPoints = br.nextBlock()) != null) {
+
+                            //简化
+                            double sSimpTime = System.currentTimeMillis();
+                            //List<vector> simpPoints = simplificator.extractVectorOnlyOne(gpsPoints);
+                            List<vector> simpPoints = simplificator.extractVectorOrigin(gpsPoints);
+                            double eSimpTime = System.currentTimeMillis();
+
+                            simplifyTime += eSimpTime - sSimpTime;
+                            originSize += gpsPoints.size();
+                            simpSize += simpPoints.size();
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException(filename, e);
+                    }
+
+                }
+            }
+            System.out.println("epsilon: " + epsi);
+            System.out.println("comSize: " + simpSize);
+            System.out.println("originSize: " + originSize);
+            System.out.println("简化率：" + (double)simpSize/originSize);
+            System.out.println("简化时间：" + simplifyTime + "ms");
+            System.out.println();
+        }
     }
 }
