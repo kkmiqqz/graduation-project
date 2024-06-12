@@ -10,7 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VOLTCom implements ISimplificator {
-    private static double epsilon = 10.0;
+    private double epsilon = 10.0;
+    private double sedSum = 0.0;
+    //private double sedAve = 0.0;
+    private long num = 0;
 
     public VOLTCom(double epsi){
         epsilon = epsi;
@@ -48,6 +51,7 @@ public class VOLTCom implements ISimplificator {
                 second =  traj.get(1);
                 vector tmpVector = new vector(new firstBezier(first, second), first.getTimestamp(), second.getTimestamp());
                 comTraj.add(tmpVector);
+                num += 2;
                 init = false;
             }
             else {
@@ -55,14 +59,18 @@ public class VOLTCom implements ISimplificator {
                 curVector = comTraj.get(comTraj.size() - 1);
                 gpsPoint estimatePoint = curVector.getEstimate(curPoint.getTimestamp());
 
-                //拟合满足阈值
-                if(distanceUtils.haversine(curPoint.getLatitude(), curPoint.getLongitude(),
-                        estimatePoint.getLatitude(), estimatePoint.getLongitude()) < epsilon) {
+                double sedCur = distanceUtils.haversine(curPoint.getLatitude(), curPoint.getLongitude(),
+                        estimatePoint.getLatitude(), estimatePoint.getLongitude());
+                //拟合,平均sed满足阈值
+                if((sedSum + sedCur) / (num + 1) < epsilon) {
                     curVector.setETime(curPoint.getTimestamp());
+                    sedSum += sedCur;
+                    num++;
                 } else { //不满足，持续启用二阶
                     secondBezier tmpFunction = new secondBezier(curVector.getPstart(), curVector.getPend(), curPoint);
                     vector tmpVector = new vector(tmpFunction, curVector.getETime(), curPoint.getTimestamp());
                     comTraj.add(tmpVector);
+                    num++;
                 }
             }
         }
