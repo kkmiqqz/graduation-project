@@ -25,7 +25,8 @@ public class TD_TR implements ISimplificator{
             return res;
         }
         //简化
-        Set<Integer> resIndex = compress(0, traj.size() - 1, traj);
+        //Set<Integer> resIndex = compress(0, traj.size() - 1, traj);
+        Set<Integer> resIndex = compressByAveSed(0, traj.size() - 1, traj);
         //index转换为List
         for(int index : resIndex){
             res.add(traj.get(index));
@@ -63,17 +64,19 @@ public class TD_TR implements ISimplificator{
     private Set<Integer> compressByAveSed(int start, int end, List<gpsPoint> traj) {
         Set<Integer> res = new LinkedHashSet<>();
         double sedMax = 0;
+        double sedSum = 0;
         int index = start;
 
         for (int i = start + 1; i < end; i++) {
             double d = distanceUtils.calcSED(traj.get(start), traj.get(i), traj.get(end));
+            sedSum += d;
             if (d > sedMax) {
                 index = i;
                 sedMax = d;
             }
         }
 
-        if (sedMax > epsilon) {
+        if ((sedSum / (end - start + 1)) > epsilon) {
             Set<Integer> subRes1 = compressByAveSed(start, index, traj);
             Set<Integer> subRes2 = compressByAveSed(index, end, traj);
             res.addAll(subRes1);
