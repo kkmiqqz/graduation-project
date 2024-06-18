@@ -13,6 +13,13 @@ public class gpsPoint  {
         this.latitude = latitude;
     }
 
+    public gpsPoint(double longitude, double latitude) {
+        this.id = null;
+        this.timestamp = 0;
+        this.longitude = longitude;
+        this.latitude = latitude;
+    }
+
     public gpsPoint() { //反序列化时需要
         this.id = "0";
         this.timestamp = 0;
