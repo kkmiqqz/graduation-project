@@ -12,8 +12,8 @@ public class Hull {
     public static final int TOP_OP = 1;
     public static final int BOT_OP = 2;
 
-    public static PathHull left, right;
-    public static double top, bot;
+//    public static PathHull left, right;
+//    public static double top, bot;
 
     public static void hullPush(PathHull h, gpsPoint e) {
         h.elt[++h.top] = e;
@@ -83,7 +83,7 @@ public class Hull {
         }
     }
 
-    public static void split(PathHull h, gpsPoint e) {
+    public void split(PathHull h, gpsPoint e) {
         gpsPoint tmpE = null;
         int tmpO;
 
@@ -104,14 +104,14 @@ public class Hull {
         }
     }
 
-    public static boolean slopeSign(PathHull h, int p, int q, double[] line) {
-        return sgn(line[0] * (h.elt[q].getLongitude() - h.elt[p].getLongitude())
-                + line[1] * (h.elt[q].getLatitude() - h.elt[p].getLatitude()));
+    public static boolean slopeSign(PathHull h, int p, int q, Homog line) {
+        return sgn(line.getWw() * (h.elt[q].getLongitude() - h.elt[p].getLongitude())
+                + line.getXx() * (h.elt[q].getLatitude() - h.elt[p].getLatitude()));
     }
 
-    public static void findExtreme(PathHull h, double[] line, gpsPoint[] e, double[] dist, gpsPoint i, gpsPoint j) {
+    public double findExtreme(PathHull h, Homog line, gpsPoint e, gpsPoint i, gpsPoint j) {
         int sbase, sbrk, mid, lo, m1, brk, m2, hi;
-        double d1, d2;
+        double dist, d1, d2;
         double xs = i.getLongitude(), ys = i.getLatitude();
         double xe = j.getLongitude(), ye = j.getLatitude();
 
@@ -159,23 +159,25 @@ public class Hull {
             //java8中，不能在三目运算符中进行赋值
             //dist[0] = (d1 >= d2) ? (e[0] = h.elt[lo], d1) : (e[0] = h.elt[m2], d2);
             if (d1 >= d2) {
-                e[0] = h.elt[lo];
-                dist[0] = d1;
+                e = h.elt[lo];
+                dist = d1;
             } else {
-                e[0] = h.elt[m2];
-                dist[0] = d2;
+                e = h.elt[m2];
+                dist = d2;
             }
         } else {
-            dist[0] = 0.0;
+            dist = 0.0;
             for (mid = h.bot; mid <= h.top; mid++) {
                 double x1 = h.elt[mid].getLongitude(), y1 = h.elt[mid].getLatitude();
                 d1 = Math.abs((ye - ys) * x1 - (xe - xs) * y1 + xe * ys - xs * ye) / Math.sqrt((ye - ys) * (ye - ys) + (xe - xs) * (xe - xs));
-                if (d1 > dist[0]) {
-                    dist[0] = d1;
-                    e[0] = h.elt[mid];
+                if (d1 > dist) {
+                    dist = d1;
+                    e = h.elt[mid];
                 }
             }
         }
+
+        return dist;
     }
 
     public static void main(String[] args) {
