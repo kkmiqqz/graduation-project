@@ -15,13 +15,12 @@ import static com.sun.deploy.util.SessionState.init;
 import static org.urbcomp.startdb.simplificator.DPhullCommon.Hull.hullAdd;
 import static org.urbcomp.startdb.simplificator.DPhullCommon.Hull.hullInit;
 
-public class DPhull {
-    private Hull hull;
+public class DPhull implements ISimplificator{
+    //private final Hull hull;
     private PathHull left, right;
     private gpsPoint PHtag;
     private Homog line;
     private double top, bot;
-    private int n;
     private double epsilon = 10;
     private double EPSILON_SQ;
     private int MAX_POINTS = 1001;
@@ -33,6 +32,8 @@ public class DPhull {
 
     public DPhull(double epsi) {
         epsilon = epsi;
+        //hull = new Hull();
+        line = new Homog();
     }
 
     public void addSplit(gpsPoint split) { //测试：使用时间戳
@@ -64,15 +65,15 @@ public class DPhull {
         if (j.getTimestamp() - i.getTimestamp() > 1) {
             line.crossProd2cch(i, j);
 
-            ld = hull.findExtreme(left, line, le, i, j);
-            rd = hull.findExtreme(right, line, re, i, j);
+            ld = Hull.findExtreme(left, line, le, i, j);
+            rd = Hull.findExtreme(right, line, re, i, j);
 
             if (ld < rd) {
                 if (rd > epsilon) {
                     if (PHtag.equals(re))
                         build(i, re);
                     else
-                        hull.split(right, re);
+                        Hull.split(right, re);
 
                     addSplit(re);
                     dp(i, re);
@@ -80,7 +81,7 @@ public class DPhull {
                     dp(re, j);
                 }
             } else if (ld > epsilon) {
-                hull.split(left, le);
+                Hull.split(left, le);
                 addSplit(le);
                 dp(le, j);
                 build(i, le);
@@ -92,17 +93,17 @@ public class DPhull {
     public List<gpsPoint> simplify(List<gpsPoint> traj) {
         List<gpsPoint> res = new ArrayList<>();
 
-        double b = 0.0, t = 0.0;
-
-        for (int i = 0; i < n; i++) {
-            if (t < traj.get(i).getLatitude()) t = traj.get(i).getLatitude();
-            if (t < traj.get(i).getLongitude()) t = traj.get(i).getLongitude();
-            if (b > traj.get(i).getLatitude()) b = traj.get(i).getLatitude();
-            if (b > traj.get(i).getLongitude()) b = traj.get(i).getLongitude();
-        }
-
-        top = t + 3.5 + t * 0.05;
-        bot = b - 10.5 - b * 0.05;
+//        double b = 0.0, t = 0.0;
+//
+//        for (int i = 0; i < n; i++) {
+//            if (t < traj.get(i).getLatitude()) t = traj.get(i).getLatitude();
+//            if (t < traj.get(i).getLongitude()) t = traj.get(i).getLongitude();
+//            if (b > traj.get(i).getLatitude()) b = traj.get(i).getLatitude();
+//            if (b > traj.get(i).getLongitude()) b = traj.get(i).getLongitude();
+//        }
+//
+//        top = t + 3.5 + t * 0.05;
+//        bot = b - 10.5 - b * 0.05;
 
         n_split = 2;
         splits[0] = traj.get(0);
@@ -111,7 +112,13 @@ public class DPhull {
         left = new PathHull();
         right = new PathHull();
 
+        build(traj.get(0), traj.get(traj.size() - 1));
+        dp(traj.get(0), traj.get(traj.size() - 1));
 
+        for(gpsPoint point : splits) {
+            if(point == null) break;
+            res.add(point);
+        }
 
         return res;
     }

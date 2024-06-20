@@ -83,7 +83,7 @@ public class Hull {
         }
     }
 
-    public void split(PathHull h, gpsPoint e) {
+    public static void split(PathHull h, gpsPoint e) {
         gpsPoint tmpE = null;
         int tmpO;
 
@@ -109,7 +109,7 @@ public class Hull {
                 + line.getXx() * (h.elt[q].getLatitude() - h.elt[p].getLatitude()));
     }
 
-    public double findExtreme(PathHull h, Homog line, gpsPoint e, gpsPoint i, gpsPoint j) {
+    public static double findExtreme(PathHull h, Homog line, gpsPoint e, gpsPoint i, gpsPoint j) {
         int sbase, sbrk, mid, lo, m1, brk, m2, hi;
         double dist, d1, d2;
         double xs = i.getLongitude(), ys = i.getLatitude();
