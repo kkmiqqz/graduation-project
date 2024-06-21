@@ -1,30 +1,30 @@
 package org.urbcomp.startdb;
 
-public class gpsPoint  {
+public class gpsPoint {
     private String id;
     private long timestamp;
     private double longitude;
     private double latitude;
-
+    private static final double EPS = 1e-9;
     public gpsPoint(String id, long timestamp, double longitude, double latitude) {
         this.id = id;
         this.timestamp = timestamp;
-        this.longitude = longitude;
-        this.latitude = latitude;
+        this.longitude = longitude; // 修正
+        this.latitude = latitude;   // 修正
     }
 
     public gpsPoint(double longitude, double latitude) {
         this.id = null;
         this.timestamp = 0;
-        this.longitude = longitude;
-        this.latitude = latitude;
+        this.longitude = longitude; // 修正
+        this.latitude = latitude;   // 修正
     }
 
-    public gpsPoint() { //反序列化时需要
+    public gpsPoint() {
         this.id = "0";
         this.timestamp = 0;
-        this.longitude = 0.0;
-        this.latitude = 0.0;
+        this.longitude = 0.0;      // 修正
+        this.latitude = 0.0;       // 修正
     }
 
     // Getters and setters
@@ -49,7 +49,7 @@ public class gpsPoint  {
     }
 
     public void setLongitude(double longitude) {
-        this.longitude = longitude;
+        this.longitude = longitude; // 修正
     }
 
     public double getLatitude() {
@@ -57,11 +57,21 @@ public class gpsPoint  {
     }
 
     public void setLatitude(double latitude) {
-        this.latitude = latitude;
+        this.latitude = latitude;   // 修正
     }
 
-    boolean equals(gpsPoint point){
-        return this.getId() == point.getId() && this.getTimestamp() == point.getTimestamp()
-                && this.getLongitude() == point.getLongitude() && this.getLatitude() == point.getLatitude();
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        gpsPoint other = (gpsPoint) obj;
+        return this.getId().equals(other.getId()) && this.getTimestamp() == other.getTimestamp()
+                && Math.abs(this.getLongitude() - other.getLongitude()) < EPS
+                && Math.abs(this.getLatitude() - other.getLatitude()) < EPS;
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

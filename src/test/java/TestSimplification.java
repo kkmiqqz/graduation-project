@@ -44,7 +44,7 @@ public class TestSimplification {
                     //简化器
                     TD_TR simplificator = new TD_TR(epsi);
 
-                    try (GPSBlockReader br = new GPSBlockReader(inputFileName + "/" + filename, 1000, dataName)) {
+                    try (GPSBlockReader br = new GPSBlockReader(inputFileName + "/" + filename, 1, dataName)) {
                         List<gpsPoint> gpsPoints;
 
                         while ((gpsPoints = br.nextBlock()) != null) {
@@ -116,7 +116,7 @@ public class TestSimplification {
                     //简化器
                     VOLTCom simplificator = new VOLTCom(epsi);
 
-                    try (GPSBlockReader br = new GPSBlockReader(inputFileName + "/" + filename, 1000, dataName)) {
+                    try (GPSBlockReader br = new GPSBlockReader(inputFileName + "/" + filename, 1, dataName)) {
                         List<gpsPoint> gpsPoints;
 
                         while ((gpsPoints = br.nextBlock()) != null) {
@@ -148,7 +148,7 @@ public class TestSimplification {
     }
 
     @Test
-    public void testDPhull() {
+    public void testDPhull() { //Q1:数据集正常，结果出现重复点
         for(double epsi = 0.00005; epsi <= 0.00005; epsi += 10.0) {
 
             //metric
@@ -173,7 +173,7 @@ public class TestSimplification {
                     //简化器
                     DPhull simplificator = new DPhull(epsi);
 
-                    try (GPSBlockReader br = new GPSBlockReader(inputFileName + "/" + filename, 1000, dataName)) {
+                    try (GPSBlockReader br = new GPSBlockReader(inputFileName + "/" + filename, 1, dataName)) {
                         List<gpsPoint> gpsPoints;
 
                         while ((gpsPoints = br.nextBlock()) != null) {
