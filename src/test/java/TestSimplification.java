@@ -12,7 +12,7 @@ import java.util.List;
 
 public class TestSimplification {
     //数据集
-    String inputFileName = "src/main/resources/Geolife";
+    String inputFileName = "src/main/resources/test";
     private String dataName = "Geolife";
 
     @Test
@@ -139,7 +139,7 @@ public class TestSimplification {
                 }
             }
             System.out.println("epsilon: " + epsi);
-            System.out.println("comSize: " + simpSize);
+            System.out.println("simpSize: " + simpSize);
             System.out.println("originSize: " + originSize);
             System.out.println("简化率：" + (double)simpSize/originSize);
             System.out.println("简化时间：" + simplifyTime + "ms");
@@ -149,7 +149,7 @@ public class TestSimplification {
 
     @Test
     public void testDPhull() {
-        for(double epsi = 10.0; epsi <= 100.0; epsi += 10.0) {
+        for(double epsi = 0.00005; epsi <= 0.00005; epsi += 10.0) {
 
             //metric
             double simplifyTime = 0.0;
@@ -190,7 +190,6 @@ public class TestSimplification {
                     } catch (Exception e) {
                         throw new RuntimeException(filename, e);
                     }
-
                 }
             }
             System.out.println("epsilon: " + epsi);

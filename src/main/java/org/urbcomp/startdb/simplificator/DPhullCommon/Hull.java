@@ -15,6 +15,14 @@ public class Hull {
 //    public static PathHull left, right;
 //    public static double top, bot;
 
+    public static void hullInit(PathHull h, gpsPoint e1, gpsPoint e2) {
+        h.elt[HULL_MAX] = e1;
+        h.elt[h.top = HULL_MAX + 1] = e2;
+        h.elt[h.bot = HULL_MAX - 1] = e2;
+        h.helt[h.hp = 0] = e2;
+        h.op[0] = PUSH_OP;
+    }
+
     public static void hullPush(PathHull h, gpsPoint e) {
         h.elt[++h.top] = e;
         h.elt[--h.bot] = e;
@@ -32,19 +40,16 @@ public class Hull {
         h.op[h.hp] = BOT_OP;
     }
 
-    public static void hullInit(PathHull h, gpsPoint e1, gpsPoint e2) {
-        h.elt[HULL_MAX] = e1;
-        h.elt[h.top = HULL_MAX + 1] = e2;
-        h.elt[h.bot = HULL_MAX - 1] = e2;
-        h.helt[h.hp = 0] = e2;
-        h.op[0] = PUSH_OP;
-    }
-
     //Determine if point c is left to the line of a to b
     public static boolean leftOf(gpsPoint a, gpsPoint b, gpsPoint c) {
-        //叉积，正负由sin(Θ)决定
-        return ((a.getLongitude() - c.getLongitude()) * (b.getLatitude() - c.getLatitude())
-                >= (b.getLongitude() - c.getLongitude()) * (a.getLatitude() - c.getLatitude()));
+        //叉积，正负由sin(Θ)决定，小于180为正
+        //crossProduct = (b.getX() - a.getX()) * (c.getY() - a.getY()) - (b.getY() - a.getY()) * (c.getX() - a.getX());
+        double crossProduct = (b.getLongitude() - a.getLongitude()) * (c.getLatitude() - a.getLatitude())
+                - (c.getLongitude() - a.getLongitude()) * (b.getLatitude() - a.getLatitude());
+
+        return crossProduct > 0;
+//        return ((a.getLongitude() - c.getLongitude()) * (b.getLatitude() - c.getLatitude())
+//                >= (b.getLongitude() - c.getLongitude()) * (a.getLatitude() - c.getLatitude()));
     }
 
     public static boolean sgn(double a) {
@@ -109,11 +114,12 @@ public class Hull {
                 + line.getXx() * (h.elt[q].getLatitude() - h.elt[p].getLatitude()));
     }
 
-    public static double findExtreme(PathHull h, Homog line, gpsPoint e, gpsPoint i, gpsPoint j) {
+    public static ExtremeResult findExtreme(PathHull h, Homog line, gpsPoint i, gpsPoint j) {
         int sbase, sbrk, mid, lo, m1, brk, m2, hi;
-        double dist, d1, d2;
+        double dist = 0.0, d1, d2;
         double xs = i.getLongitude(), ys = i.getLatitude();
         double xe = j.getLongitude(), ye = j.getLatitude();
+        gpsPoint extremePoint = null;
 
         if ((h.top - h.bot) > 8) {
             lo = h.bot;
@@ -151,33 +157,40 @@ public class Hull {
                 }
             }
 
-            double x1 = h.elt[lo].getLongitude(), y1 = h.elt[lo].getLatitude();
-            double x2 = h.elt[m2].getLongitude(), y2 = h.elt[m2].getLatitude();
-            d1 = Math.abs((ye - ys) * x1 - (xe - xs) * y1 + xe * ys - xs * ye) / Math.sqrt((ye - ys) * (ye - ys) + (xe - xs) * (xe - xs));
-            d2 = Math.abs((ye - ys) * x2 - (xe - xs) * y2 + xe * ys - xs * ye) / Math.sqrt((ye - ys) * (ye - ys) + (xe - xs) * (xe - xs));
+            gpsPoint point1 = h.elt[lo];
+            gpsPoint point2 = h.elt[m2];
+            if(point1 != null && point2 != null) {
+                double x1 = h.elt[lo].getLongitude(), y1 = h.elt[lo].getLatitude();
+                double x2 = h.elt[m2].getLongitude(), y2 = h.elt[m2].getLatitude();
+                d1 = Math.abs((ye - ys) * x1 - (xe - xs) * y1 + xe * ys - xs * ye) / Math.sqrt((ye - ys) * (ye - ys) + (xe - xs) * (xe - xs));
+                d2 = Math.abs((ye - ys) * x2 - (xe - xs) * y2 + xe * ys - xs * ye) / Math.sqrt((ye - ys) * (ye - ys) + (xe - xs) * (xe - xs));
 
-            //java8中，不能在三目运算符中进行赋值
-            //dist[0] = (d1 >= d2) ? (e[0] = h.elt[lo], d1) : (e[0] = h.elt[m2], d2);
-            if (d1 >= d2) {
-                e = h.elt[lo];
-                dist = d1;
-            } else {
-                e = h.elt[m2];
-                dist = d2;
+                //java8中，不能在三目运算符中进行赋值
+                //dist[0] = (d1 >= d2) ? (e[0] = h.elt[lo], d1) : (e[0] = h.elt[m2], d2);
+                if (d1 >= d2) {
+                    extremePoint = h.elt[lo];
+                    dist = d1;
+                } else {
+                    extremePoint = h.elt[m2];
+                    dist = d2;
+                }
             }
         } else {
             dist = 0.0;
             for (mid = h.bot; mid <= h.top; mid++) {
-                double x1 = h.elt[mid].getLongitude(), y1 = h.elt[mid].getLatitude();
-                d1 = Math.abs((ye - ys) * x1 - (xe - xs) * y1 + xe * ys - xs * ye) / Math.sqrt((ye - ys) * (ye - ys) + (xe - xs) * (xe - xs));
-                if (d1 > dist) {
-                    dist = d1;
-                    e = h.elt[mid];
+                gpsPoint curPoint = h.elt[mid];
+                if(curPoint != null) {
+                    double x1 = h.elt[mid].getLongitude(), y1 = h.elt[mid].getLatitude();
+                    d1 = Math.abs((ye - ys) * x1 - (xe - xs) * y1 + xe * ys - xs * ye) / Math.sqrt((ye - ys) * (ye - ys) + (xe - xs) * (xe - xs));
+                    if (d1 > dist) {
+                        dist = d1;
+                        extremePoint = h.elt[mid];
+                    }
                 }
             }
         }
 
-        return dist;
+        return new ExtremeResult(dist, extremePoint);
     }
 
     public static void main(String[] args) {
