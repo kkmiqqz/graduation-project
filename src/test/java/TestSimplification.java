@@ -148,7 +148,7 @@ public class TestSimplification {
     }
 
     @Test
-    public void testDPhull() {
+    public void testDPhull() { //Q1:数据集正常，结果出现重复点
         for(double epsi = 0.00005; epsi <= 0.00005; epsi += 10.0) {
 
             //metric

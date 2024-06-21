@@ -35,15 +35,19 @@ public class DPhull implements ISimplificator{
 
     public void addSplit(gpsPoint split) { //测试：使用时间戳
         int i;
-        for (i = n_split; i > 0 && splits[i - 1] != null && splits[i - 1].getTimestamp() > split.getTimestamp(); i--)
+        for (i = n_split; i > 0 && splits[i - 1] != null && splits[i - 1].getTimestamp() > split.getTimestamp(); i--) {
             splits[i] = splits[i - 1];
+        }
         splits[i] = split;
         n_split++;
     }
 
     public void build(gpsPoint i, gpsPoint j) {
-        phTag =  traj.get(traj.indexOf(i) + (traj.indexOf(j) - traj.indexOf(i)) / 2);
-        int index = traj.indexOf(phTag);
+//        if(traj.indexOf(j) - traj.indexOf(i) <= 1) {
+//            return;
+//        }
+        int index = traj.indexOf(i) + (traj.indexOf(j) - traj.indexOf(i)) / 2;
+        phTag = traj.get(index);
 
         if(index > 0 && index < traj.size() - 1) {
             Hull.hullInit(leftPathHull, phTag, traj.get(index - 1));
@@ -63,7 +67,7 @@ public class DPhull implements ISimplificator{
 
         if(i == null || j == null) return;
 
-        if (j.getTimestamp() >= i.getTimestamp()) {
+        if (j.getTimestamp() > i.getTimestamp()) { // >= --> =
             line.crossProd2cch(i, j);
 
             ExtremeResult leftExtremeResult = Hull.findExtreme(leftPathHull, line, i, j);
@@ -123,11 +127,16 @@ public class DPhull implements ISimplificator{
         rightPathHull = new PathHull();
 
         build(traj.get(0), traj.get(traj.size() - 1));
-        Hull.hullPrint(leftPathHull);
+      //  Hull.hullPrint(leftPathHull);
         dp(traj.get(0), traj.get(traj.size() - 1));
 
+        int i = 1;
         for(gpsPoint point : splits) {
             if(point == null) break;
+
+            //打印
+            //System.out.println(i++ + " " + point.getLatitude() + " " + point.getLongitude() + " " + point.getTimestamp());
+
             res.add(point);
         }
 
