@@ -18,7 +18,7 @@ public class StreamSerialize {
     private final HashMap<String, Deque<Double>> lonWindow = new HashMap<>();
     private final HashMap<String, Deque<Double>> latWindow = new HashMap<>();
     private String prevId = null;  // 记录上一个点的 UID
-    private static final int WINDOW_SIZE = 5;  // 窗口大小
+    private static final int WINDOW_SIZE = 2;  // 窗口大小
 
     public byte[] serialize(gpsPoint point) throws IOException {
         byte[] timeBytes = timeCompressor.compressTime(point.getTimestamp());
@@ -27,12 +27,10 @@ public class StreamSerialize {
         double currentLat = point.getLatitude();
 
         // 获取或初始化窗口
-        lonWindow.putIfAbsent(id, new ArrayDeque<>());
-        latWindow.putIfAbsent(id, new ArrayDeque<>());
-        Deque<Double> lonDeque = lonWindow.get(id);
-        Deque<Double> latDeque = latWindow.get(id);
+        Deque<Double> lonDeque = lonWindow.computeIfAbsent(id, k -> new ArrayDeque<>());
+        Deque<Double> latDeque = latWindow.computeIfAbsent(id, k -> new ArrayDeque<>());
 
-        // 预测经纬度
+        // 预测
         double predictedLon = predict(lonDeque);
         double predictedLat = predict(latDeque);
 
@@ -40,15 +38,11 @@ public class StreamSerialize {
         double deltaLon = currentLon - predictedLon;
         double deltaLat = currentLat - predictedLat;
 
-        // 压缩预测误差
+        // 压缩预测误差（经度和纬度合并）
         compressor.addValue(deltaLon);
-        compressor.close();
-        byte[] lonBytes = compressor.getBytes();
-        compressor.refresh();
-
         compressor.addValue(deltaLat);
         compressor.close();
-        byte[] latBytes = compressor.getBytes();
+        byte[] combinedLonLatBytes = compressor.getBytes();
         compressor.refresh();
 
         // 组合数据
@@ -65,10 +59,8 @@ public class StreamSerialize {
 
         writeVarInt(out, timeBytes.length);
         out.write(timeBytes);
-        writeVarInt(out, lonBytes.length);
-        out.write(lonBytes);
-        writeVarInt(out, latBytes.length);
-        out.write(latBytes);
+        writeVarInt(out, combinedLonLatBytes.length);
+        out.write(combinedLonLatBytes);
 
         byte[] combined = out.toByteArray();
 

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.List;
 
 public class StreamDeserialize {
     private final StreamTimeDecompressor timeDecompressor = new StreamTimeDecompressor();
@@ -19,7 +20,7 @@ public class StreamDeserialize {
     private final HashMap<String, Deque<Double>> lonWindow = new HashMap<>();
     private final HashMap<String, Deque<Double>> latWindow = new HashMap<>();
     private String currentId = null;  // 当前轨迹的 UID
-    private static final int WINDOW_SIZE = 5;  // 窗口大小
+    private static final int WINDOW_SIZE = 10;  // 窗口大小
 
     public gpsPoint deserialize(byte[] compressed) throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(compressed);
@@ -45,29 +46,26 @@ public class StreamDeserialize {
         in.read(timeBytes);
         long time = timeDecompressor.decompressTime(timeBytes);
 
-        // 读取经度误差
-        int lonLen = readVarInt(in);
-        byte[] lonBytes = new byte[lonLen];
-        in.read(lonBytes);
-        decompressor.setBytes(lonBytes);
-        double deltaLon = decompressor.decompress().get(0);
-        decompressor.refresh();
+        // 读取合并的经纬度压缩数据
+        int combinedLonLatLen = readVarInt(in);
+        byte[] combinedLonLatBytes = new byte[combinedLonLatLen];
+        in.read(combinedLonLatBytes);
 
-        // 读取纬度误差
-        int latLen = readVarInt(in);
-        byte[] latBytes = new byte[latLen];
-        in.read(latBytes);
-        decompressor.setBytes(latBytes);
-        double deltaLat = decompressor.decompress().get(0);
+        // 解压经度和纬度
+        decompressor.setBytes(combinedLonLatBytes);
+        List<Double> values = decompressor.decompress();
+        if (values.size() < 2) {
+            throw new IOException("Expected at least 2 values (lon and lat deltas), got " + values.size());
+        }
+        double deltaLon = values.get(0);  // 第一个值为经度差值
+        double deltaLat = values.get(1);  // 第二个值为纬度差值
         decompressor.refresh();
 
         // 获取或初始化窗口
-        lonWindow.putIfAbsent(currentId, new ArrayDeque<>());
-        latWindow.putIfAbsent(currentId, new ArrayDeque<>());
-        Deque<Double> lonDeque = lonWindow.get(currentId);
-        Deque<Double> latDeque = latWindow.get(currentId);
+        Deque<Double> lonDeque = lonWindow.computeIfAbsent(currentId, k -> new ArrayDeque<>());
+        Deque<Double> latDeque = latWindow.computeIfAbsent(currentId, k -> new ArrayDeque<>());
 
-        // 预测经纬度
+        // 预测
         double predictedLon = predict(lonDeque);
         double predictedLat = predict(latDeque);
 
@@ -91,7 +89,7 @@ public class StreamDeserialize {
         }
         double last = deque.removeLast();
         double secondLast = deque.getLast();
-        deque.addLast(last);  // 恢复
+        deque.addLast(last);
         return 2 * last - secondLast;  // 线性预测
     }
 

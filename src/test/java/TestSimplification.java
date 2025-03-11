@@ -1,7 +1,6 @@
 import org.junit.Test;
 import org.urbcomp.startdb.gpsPoint;
 import org.urbcomp.startdb.simplificator.DPhull;
-import org.urbcomp.startdb.simplificator.ISimplificator;
 import org.urbcomp.startdb.simplificator.TD_TR;
 import org.urbcomp.startdb.simplificator.VOLTCom;
 import org.urbcomp.startdb.simplificator.VOLTComCommon.vector;
