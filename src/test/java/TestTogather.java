@@ -8,8 +8,12 @@ import java.io.File;
 
 public class TestTogather {
     private static final int BLOCK_SIZE = 1000;
-    private String inputFileName = "src/main/resources/chengdu";
-    private String dataName = "Chengdu";
+   // private String inputFileName = "src/main/resources/chengdu"; // 数据目录
+
+  //  private String inputFileName = "src/main/resources/Geolife"; // 数据目录
+    private String inputFileName = "src/main/resources/T-drive"; // 数据目录
+
+    // private String dataName = "Chengdu";
 
     @Test
     public void testStreamCompression() {
@@ -37,41 +41,38 @@ public class TestTogather {
                 try (GPSBlockReader br = new GPSBlockReader(inputFileName + "/" + filename, BLOCK_SIZE, id)) {
                     gpsPoint point;
                     while ((point = br.nextPoint()) != null) {
-                        long start = System.currentTimeMillis();
+                        long start = System.nanoTime();
                         byte[] compressed = serializer.serialize(point);
-                        long endCompress = System.currentTimeMillis();
+                        long endCompress = System.nanoTime();
 
                         long startDecompress = endCompress;
                         gpsPoint decompressed = deserializer.deserialize(compressed);
-                        long endDecompress = System.currentTimeMillis();
+                        long endDecompress = System.nanoTime();
 
                         // 验证
                         if (!point.equals(decompressed)) {
                             System.out.println("Decompression error!");
                         }
 
-                        long compressTime = endCompress - start;
-                        long decompressTime = endDecompress - startDecompress;
+                        double compressTime = (endCompress - start) / 1e6;
+                        double decompressTime = (endDecompress - startDecompress) / 1e6;
                         long compressedSize = compressed.length;
-                      //  System.out.println("压缩后大小"+compressedSize);
-                     //   System.out.println("UID length: " + point.getId().getBytes().length);
-                        long originalSize = 24 + point.getId().getBytes().length; // 假设time+lon+lat=24字节，包含UID长度
-                      //  System.out.println("原始大小"+originalSize);
+                        long originalSize = 24 + point.getId().getBytes().length; // 假设time+lon+lat=24字节
                         totalCompressTime += compressTime;
                         totalDecompressTime += decompressTime;
                         totalCompressedSize += compressedSize;
                         totalOriginalSize += originalSize;
                         pointCount++;
 
-                        // 每1000个点打印一次平均性能
+                        // 每1000个点打印一次平均性能（这里保持原逻辑）
                         if (pointCount % 1000 == 0) {
                             double avgCompressTime = totalCompressTime / 1000.0;
                             double avgDecompressTime = totalDecompressTime / 1000.0;
                             double compressionRatio = (double) totalCompressedSize / totalOriginalSize;
 
                             System.out.println("Processed 1000 points:");
-                            System.out.println("Average compression time: " + avgCompressTime + " ms");
-                            System.out.println("Average decompression time: " + avgDecompressTime + " ms");
+                            System.out.printf("Average compression time: %.6f ms\n", avgCompressTime);
+                            System.out.printf("Average decompression time: %.6f ms\n", avgDecompressTime);
                             System.out.println("Compression ratio: " + compressionRatio);
                             System.out.println();
 
