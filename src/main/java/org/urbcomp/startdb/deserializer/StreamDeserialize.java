@@ -20,7 +20,7 @@ public class StreamDeserialize {
     private final HashMap<String, Deque<Double>> lonWindow = new HashMap<>();
     private final HashMap<String, Deque<Double>> latWindow = new HashMap<>();
     private String currentId = null;  // 当前轨迹的 UID
-    private static final int WINDOW_SIZE = 2;  // 窗口大小
+    private static final int WINDOW_SIZE = 9;  // 窗口大小
 
     public gpsPoint deserialize(byte[] compressed) throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(compressed);

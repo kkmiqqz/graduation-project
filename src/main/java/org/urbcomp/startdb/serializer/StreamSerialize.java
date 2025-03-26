@@ -18,10 +18,29 @@ public class StreamSerialize {
     private final HashMap<String, Deque<Double>> lonWindow = new HashMap<>();
     private final HashMap<String, Deque<Double>> latWindow = new HashMap<>();
     private String prevId = null;  // 记录上一个点的 UID
-    private static final int WINDOW_SIZE = 2;  // 窗口大小
+    private static final int WINDOW_SIZE = 9;  // 窗口大小
+    // 新增统计字段
+    private int currentTimeOriginalSize;
+    private int currentTimeCompressedSize;
+    private int currentLonLatOriginalSize;
+    private int currentLonLatCompressedSize;
+    // 新增统计字段的获取方法
+    public int getCurrentTimeOriginalSize() { return currentTimeOriginalSize; }
+    public int getCurrentTimeCompressedSize() { return currentTimeCompressedSize; }
+    public int getCurrentLonLatOriginalSize() { return currentLonLatOriginalSize; }
+    public int getCurrentLonLatCompressedSize() { return currentLonLatCompressedSize; }
+    // 新增 UID 统计字段
+    private int currentUidOriginalSize;
+    private int currentUidCompressedSize;
+
+    // 新增获取方法
+    public int getCurrentUidOriginalSize() { return currentUidOriginalSize; }
+    public int getCurrentUidCompressedSize() { return currentUidCompressedSize; }
 
     public byte[] serialize(gpsPoint point) throws IOException {
-        byte[] timeBytes = timeCompressor.compressTime(point.getTimestamp());
+        byte[] timeBytes = timeCompressor.compressTime(point.getTimestamp()); //时间压缩
+        currentTimeOriginalSize = 8;  // 原始时间戳为 long 型（8字节）
+        currentTimeCompressedSize = timeBytes.length;
         String id = point.getId();
         double currentLon = point.getLongitude();
         double currentLat = point.getLatitude();
@@ -43,6 +62,8 @@ public class StreamSerialize {
         compressor.addValue(deltaLat);
         compressor.close();
         byte[] combinedLonLatBytes = compressor.getBytes();
+        currentLonLatOriginalSize = 16;  // 原始经纬度为两个 double（各8字节）
+        currentLonLatCompressedSize = combinedLonLatBytes.length;
         compressor.refresh();
 
         // 组合数据
@@ -56,7 +77,8 @@ public class StreamSerialize {
             out.write(uidBytes);
             prevId = id;
         }
-
+        currentUidOriginalSize= id.getBytes().length;
+        currentUidCompressedSize=1;
         writeVarInt(out, timeBytes.length);
         out.write(timeBytes);
         writeVarInt(out, combinedLonLatBytes.length);

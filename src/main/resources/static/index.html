@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>轨迹数据流式压缩</title>
+    <!-- 引入 Google Fonts (可选) -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Open Sans', Arial, sans-serif;
+          background: linear-gradient(135deg, #a8e6cf, #dcedc1);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          color: #555;
+        }
+        .container {
+          background: #fff;
+          padding: 40px;
+          border-radius: 12px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+          width: 90%;
+          max-width: 600px;
+          text-align: center;
+        }
+        h1 {
+          font-size: 2.5em;
+          color: #2d7a46;
+          margin-bottom: 20px;
+        }
+        label {
+          font-size: 1.1em;
+          color: #2d7a46;
+        }
+        input[type="file"] {
+          margin-top: 10px;
+          padding: 5px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          font-size: 1em;
+        }
+        button {
+          margin-top: 20px;
+          padding: 12px 25px;
+          font-size: 1em;
+          background-color: #2d7a46;
+          color: #fff;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: background-color 0.3s;
+        }
+        button:hover {
+          background-color: #27663b;
+        }
+        .result, .download-link {
+          margin-top: 30px;
+          text-align: left;
+        }
+        .result h3 {
+          color: #2d7a46;
+          border-bottom: 2px solid #2d7a46;
+          padding-bottom: 5px;
+        }
+        .result p {
+          font-size: 1.1em;
+          line-height: 1.6;
+        }
+        .download-link a {
+          display: inline-block;
+          margin-top: 10px;
+          padding: 10px 20px;
+          background-color: #2d7a46;
+          color: #fff;
+          text-decoration: none;
+          border-radius: 6px;
+          transition: background-color 0.3s;
+        }
+        .download-link a:hover {
+          background-color: #27663b;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>轨迹数据压缩</h1>
+    <form id="uploadForm">
+        <label for="fileInput">选择轨迹数据文件：</label><br>
+        <!-- 支持多种格式：txt, plt, csv, xls, xlsx -->
+        <input type="file" id="fileInput" name="file" accept=".txt,.plt,.csv,.xls,.xlsx"><br>
+        <button type="submit">上传并压缩</button>
+    </form>
+
+    <div class="result" id="result"></div>
+    <div class="download-link" id="downloadLink" style="display: none;">
+        <a id="downloadAnchor" href="#" download="compressed_output.bin">下载压缩结果文件</a>
+    </div>
+
+    <script>
+        document.getElementById("uploadForm").addEventListener("submit", function (e) {
+          e.preventDefault();
+          var fileInput = document.getElementById("fileInput");
+          if (fileInput.files.length === 0) {
+            alert("请选择一个文件！");
+            return;
+          }
+          var formData = new FormData();
+          formData.append("file", fileInput.files[0]);
+
+          // 发送到后端 /api/compress 接口
+          fetch("http://localhost:8080/api/compress", {
+            method: "POST",
+            body: formData
+          })
+          .then(function(response) {
+            if (!response.ok) {
+              throw new Error("上传失败");
+            }
+            return response.json();
+          })
+          .then(function(data) {
+            var resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = "<h3>压缩结果</h3>" +
+                                  "<p>处理点数：" + data.compressionResult.totalPoints + "</p>" +
+                                  "<p>平均压缩时间：" + data.compressionResult.averageCompressTime.toFixed(6) + " 毫秒</p>" +
+                                  "<p>平均解压时间：" + data.compressionResult.averageDecompressTime.toFixed(6) + " 毫秒</p>" +
+                                  "<p>压缩比：" + data.compressionResult.compressionRatio.toFixed(6) + "</p>";
+
+            // 使用 Base64 数据创建下载链接
+            var downloadAnchor = document.getElementById("downloadAnchor");
+            downloadAnchor.href = "data:application/octet-stream;base64," + data.downloadFileBase64;
+            document.getElementById("downloadLink").style.display = "block";
+          })
+          .catch(function(error) {
+            alert("错误：" + error.message);
+          });
+        });
+    </script>
+</div>
+</body>
+</html>
