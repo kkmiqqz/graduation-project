@@ -36,7 +36,7 @@ public class ElfPlusDecompressor implements IDecompressor {
         this.xorDecompressor.setBytes(bs);
     }
 
-    @Override
+   /* @Override
     public Double nextValue() {
         Double v;
 
@@ -49,8 +49,27 @@ public class ElfPlusDecompressor implements IDecompressor {
             v = recoverVByBetaStar();
         }
         return v;
-    }
+    }*/
+   @Override
+   public Double nextValue() {
+       try {
+           if (xorDecompressor.getInputStream().available() <= 0) {
+               return null; // 无更多数据时返回null
+           }
 
+           // 原有判断逻辑不变
+           if (readInt(1) == 0) {
+               return recoverVByBetaStar();
+           } else if (readInt(1) == 0) {
+               return xorDecompressor.readValue();
+           } else {
+               lastBetaStar = readInt(4);
+               return recoverVByBetaStar();
+           }
+       } catch (IOException e) {
+           return null;
+       }
+   }
     private Double recoverVByBetaStar() {
         double v;
         Double vPrime = xorDecompressor.readValue();

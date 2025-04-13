@@ -1,13 +1,13 @@
 package org.urbcomp.startdb.selfstar.compressor;
 
-import org.urbcomp.startdb.selfstar.compressor.xor.IXORCompressor;
+import org.urbcomp.startdb.selfstar.compressor.xor.ElfXORCompressor;
 import org.urbcomp.startdb.selfstar.utils.Elf64Utils;
 import org.urbcomp.startdb.selfstar.utils.OutputBitStream;
 
 import java.util.Arrays;
 
 public class ElfPlusCompressor implements ICompressor {
-    private final IXORCompressor xorCompressor;
+    private final ElfXORCompressor xorCompressor;
 
     private OutputBitStream os;
 
@@ -17,12 +17,13 @@ public class ElfPlusCompressor implements ICompressor {
 
     private int numberOfValues = 0;
 
-    public ElfPlusCompressor(IXORCompressor xorCompressor) {
+    public ElfPlusCompressor(ElfXORCompressor xorCompressor) {
         this.xorCompressor = xorCompressor;
         os = xorCompressor.getOutputStream();
     }
 
     public void addValue(double v) {
+
         long vLong = Double.doubleToRawLongBits(v);
         long vPrimeLong;
         numberOfValues++;
@@ -68,11 +69,11 @@ public class ElfPlusCompressor implements ICompressor {
         return compressedSizeInBits;
     }
 
-    public byte[] getBytes() {
+   /* public byte[] getBytes() {
         int byteCount = (int) Math.ceil(compressedSizeInBits / 8.0);
         return Arrays.copyOf(xorCompressor.getOut(), byteCount);
     }
-
+*/
     public void close() {
         // we write one more bit here, for marking an end of the stream.
         compressedSizeInBits += os.writeInt(2, 2);  // case 10
@@ -92,4 +93,14 @@ public class ElfPlusCompressor implements ICompressor {
         numberOfValues = 0;
         os = xorCompressor.getOutputStream();
     }
+    public void flush() {
+        // 不再写入结束标记
+        compressedSizeInBits += xorCompressor.flush();
+    }
+
+    public byte[] getBytes() {
+        // 获取当前压缩结果的精确字节
+        return Arrays.copyOf(xorCompressor.getOut(), (compressedSizeInBits+7)/8);
+    }
+
 }

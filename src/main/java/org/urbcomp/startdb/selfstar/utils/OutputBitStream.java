@@ -160,7 +160,7 @@ public class OutputBitStream implements Flushable, Closeable {
      * Current bit buffer.
      */
     private int current;
-
+    private long totalBitsWritten = 0; // 新增字段记录总写入比特数
     /**
      * Creates a new output bit stream wrapping a given output stream using a buffer of size {@link #DEFAULT_BUFFER_SIZE}.
      *
@@ -168,6 +168,7 @@ public class OutputBitStream implements Flushable, Closeable {
      *
      * @param os the output stream to wrap.
      */
+
     public OutputBitStream(final OutputStream os) {
         this(os, true);
     }
@@ -335,7 +336,7 @@ public class OutputBitStream implements Flushable, Closeable {
      * first write method called afterwards.
      */
 
-    @Override
+   /* @Override
     public void flush() {
         try {
             align();
@@ -351,7 +352,7 @@ public class OutputBitStream implements Flushable, Closeable {
         } catch (Exception ignored) {
         }
 
-    }
+    }*/
 
 
     /**
@@ -427,7 +428,7 @@ public class OutputBitStream implements Flushable, Closeable {
      * @throws IllegalArgumentException if one tries to write more bits than available in the buffer and debug is enabled.
      */
 
-    private int writeInCurrent(final int b, final int len) throws IOException {
+  /*  private int writeInCurrent(final int b, final int len) throws IOException {
 
         current |= (b & ((1 << len) - 1)) << (free -= len);
         if (free == 0) {
@@ -439,7 +440,7 @@ public class OutputBitStream implements Flushable, Closeable {
         writtenBits += len;
         return len;
     }
-
+*/
 
     /**
      * Aligns the stream.
@@ -1349,4 +1350,54 @@ public class OutputBitStream implements Flushable, Closeable {
     public byte[] getBuffer() {
         return buffer;
     }
+
+ /*   public void flush() {
+        try {
+            align(); // 只补齐到字节边界
+            if (os != null) {
+                if (buffer != null && pos > 0) {
+                    os.write(buffer, 0, pos);
+                    position += pos;
+                    pos = 0;
+                    avail = buffer.length;
+                }
+                os.flush();
+            }
+        } catch (Exception ignored) {
+        }
+    }*/
+    // 修改原有flush方法
+    public void flush() {
+        try {
+            align();
+            if (os != null) {
+                if (buffer != null && pos > 0) {
+                    os.write(buffer, 0, pos);
+                    position += pos;
+                    pos = 0;
+                    avail = buffer.length;
+                }
+                os.flush();
+            }
+            totalBitsWritten = (totalBitsWritten + 7) & ~7; // 对齐到字节边界
+        } catch (Exception ignored) {
+        }
+    }
+    // 在所有写入方法中更新totalBitsWritten
+    private int writeInCurrent(int bits, int len) throws IOException {
+        current = (current << len) | bits;
+        free -= len;
+        if (free == 0) {
+            write(current);
+            current = 0;
+            free = 8;
+        }
+        totalBitsWritten += len; // 更新写入比特数
+        return len;
+    }
+    // 新增方法获取已写入比特数
+    public long getWrittenBits() {
+        return totalBitsWritten + (8 - free) % 8; // 计算缓冲中部分写入的比特
+    }
+
 }

@@ -138,4 +138,5 @@ public class ElfXORDecompressor implements IXORDecompressor {
                 break;
         }
     }
+
 }

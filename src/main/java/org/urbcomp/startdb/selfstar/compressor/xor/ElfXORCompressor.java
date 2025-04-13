@@ -142,4 +142,21 @@ public class ElfXORCompressor implements IXORCompressor {
         storedVal = 0;
         first = true;
     }
+    /*public int flush() {
+        // 仅对齐字节，不写入结束标记
+        int paddingBits = (8 - (int) (out.getWrittenBits() % 8)) % 8;
+        if (paddingBits != 0) {
+            out.writeInt(0, paddingBits);
+        }
+        out.flush();
+        return paddingBits;
+    }*/
+    public int flush() {
+        int paddingBits = (8 - (int) (out.getWrittenBits() % 8)) % 8;
+        if (paddingBits != 0) {
+            out.writeInt(0, paddingBits);
+        }
+        out.flush();
+        return paddingBits;
+    }
 }

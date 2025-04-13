@@ -2,8 +2,7 @@ package org.urbcomp.startdb.serializer;
 
 import org.urbcomp.startdb.gpsPoint;
 import org.urbcomp.startdb.selfstar.compressor.ElfPlusCompressor;
-import org.urbcomp.startdb.selfstar.compressor.ICompressor;
-import org.urbcomp.startdb.selfstar.compressor.xor.ElfPlusXORCompressor;
+import org.urbcomp.startdb.selfstar.compressor.xor.ElfXORCompressor;
 import org.urbcomp.startdb.utils.StreamTimeCompressor;
 
 import java.io.ByteArrayOutputStream;
@@ -14,7 +13,7 @@ import java.util.HashMap;
 
 public class StreamSerialize {
     private final StreamTimeCompressor timeCompressor = new StreamTimeCompressor();
-    private final ICompressor compressor = new ElfPlusCompressor(new ElfPlusXORCompressor());
+    private final ElfPlusCompressor compressor = new ElfPlusCompressor(new ElfXORCompressor());
     private final HashMap<String, Deque<Double>> lonWindow = new HashMap<>();
     private final HashMap<String, Deque<Double>> latWindow = new HashMap<>();
     private String prevId = null;  // 记录上一个点的 UID
@@ -52,15 +51,23 @@ public class StreamSerialize {
         // 预测
         double predictedLon = predict(lonDeque);
         double predictedLat = predict(latDeque);
+/*
+        System.out.printf("currentLon= %f\n",currentLon);
+        System.out.printf("currentLat= %f\n",currentLat);
+        System.out.printf("predictedLon= %f\n",predictedLon);
+        System.out.printf("predictedLat= %f\n",predictedLat);
+*/
 
         // 计算预测误差
         double deltaLon = currentLon - predictedLon;
         double deltaLat = currentLat - predictedLat;
-
+/*        System.out.printf("deltaLon= %f\n",deltaLon);
+        System.out.printf("deltaLat= %f\n",deltaLat);*/
         // 压缩预测误差（经度和纬度合并）
         compressor.addValue(deltaLon);
         compressor.addValue(deltaLat);
-        compressor.close();
+        //compressor.close();
+        compressor.flush();
         byte[] combinedLonLatBytes = compressor.getBytes();
         currentLonLatOriginalSize = 16;  // 原始经纬度为两个 double（各8字节）
         currentLonLatCompressedSize = combinedLonLatBytes.length;

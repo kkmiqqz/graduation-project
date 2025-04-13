@@ -22,6 +22,7 @@
     </properties>
 
     <dependencies>
+
         <!-- Spring Boot Web 依赖（包含内嵌Tomcat等）-->
         <dependency>
             <groupId>org.springframework.boot</groupId>

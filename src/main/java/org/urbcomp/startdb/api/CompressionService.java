@@ -38,16 +38,17 @@ public class CompressionService {
                 long start = System.nanoTime();
                 byte[] compressed = serializer.serialize(point);
                 long endCompress = System.nanoTime();
-
+                long startDecompress = endCompress;
                 // 这里调用解压验证正确性（实际使用中可以选择移除解压过程以提高效率）
                 gpsPoint decompressed = deserializer.deserialize(compressed);
+                long endDecompress = System.nanoTime();
                 if (!point.equals(decompressed)) {
                     throw new RuntimeException("Decompression error for point: " + point);
                 }
                 fos.write(compressed);
 
                 double compressTime = (endCompress - start) / 1e6; // 转换为毫秒
-                double decompressTime = 0.0; // 此处未单独计算解压时间
+                double decompressTime = (endDecompress - startDecompress) / 1e6;
                 long compressedSize = compressed.length;
                 // 假设原始数据大小为固定值（可根据实际情况调整）
                 long originalSize = 24 + point.getId().getBytes().length;

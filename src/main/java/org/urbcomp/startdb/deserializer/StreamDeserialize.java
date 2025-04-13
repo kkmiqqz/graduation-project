@@ -6,13 +6,8 @@ import org.urbcomp.startdb.selfstar.decompressor.IDecompressor;
 import org.urbcomp.startdb.selfstar.decompressor.xor.ElfPlusXORDecompressor;
 import org.urbcomp.startdb.utils.StreamTimeDecompressor;
 
-import java.io.ByteArrayInputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
 public class StreamDeserialize {
     private final StreamTimeDecompressor timeDecompressor = new StreamTimeDecompressor();
@@ -53,12 +48,23 @@ public class StreamDeserialize {
 
         // 解压经度和纬度
         decompressor.setBytes(combinedLonLatBytes);
-        List<Double> values = decompressor.decompress();
-        if (values.size() < 2) {
-            throw new IOException("Expected at least 2 values (lon and lat deltas), got " + values.size());
+        double deltaLon;
+        try {
+            deltaLon = decompressor.nextValue();
+          //  System.out.println("Decompressed deltaLon: " + deltaLon);
+        } catch (Exception e) {
+          //  System.err.println("Error reading deltaLon: " + e.getMessage());
+            throw new IOException("Failed to read deltaLon", e);
         }
-        double deltaLon = values.get(0);  // 第一个值为经度差值
-        double deltaLat = values.get(1);  // 第二个值为纬度差值
+        double deltaLat;
+        try {
+            deltaLat = decompressor.nextValue();
+         //   System.out.println("Decompressed deltaLat: " + deltaLat);
+        } catch (Exception e) {
+         //   System.err.println("Error reading deltaLat: " + e.getMessage());
+            throw new IOException("Failed to read deltaLat", e);
+        }
+        List<Double> values = Arrays.asList(deltaLon, deltaLat);
         decompressor.refresh();
 
         // 获取或初始化窗口
