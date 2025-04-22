@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>轨迹数据压缩系统</title>
+    <title>轨迹数据流式压缩系统</title>
 
     <!-- 核心依赖 -->
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
@@ -34,23 +34,6 @@
         .card-header {
             background: var(--primary-color);
             padding: 1.5rem;
-        }
-
-        .nav-tabs {
-            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
-            margin-bottom: 1.5rem;
-        }
-
-        .nav-tabs .nav-link {
-            border: none;
-            color: #6c757d;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-
-        .nav-tabs .nav-link.active {
-            color: var(--primary-color);
-            border-bottom: 3px solid var(--primary-color);
         }
 
         .drop-zone {
@@ -87,7 +70,6 @@
             transform: translateY(0);
         }
 
-        /* 新增地图样式 */
         #mapPreview {
             height: 300px;
             border-radius: 0.8rem;
@@ -95,7 +77,6 @@
             z-index: 1;
         }
 
-        /* 图标放大 */
         .bi {
             font-size: 1.5em;
             vertical-align: middle;
@@ -106,74 +87,116 @@
             margin-bottom: 1rem;
         }
 
-        /* 文件信息显示 */
         .file-info {
             margin-top: 1rem;
             font-size: 0.9em;
             color: var(--primary-color);
         }
 
-        /* 统一按钮颜色 */
         .btn-success {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
         }
+
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .nav-link {
+            color: #6c757d;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        .user-avatar {
+            display: flex;
+            align-items: center;
+            color: #6c757d;
+            font-weight: 500;
+            margin-right: 1rem;
+        }
+
+        .user-avatar .bi-person-circle {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+
+        .section-heading {
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        .section-heading .bi {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
     </style>
 </head>
 <body>
-<div class="container py-5">
+<!-- 导航栏 -->
+<nav class="navbar navbar-expand-lg navbar-light fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">轨迹压缩系统</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <span class="user-avatar" id="userInfo">
+                        <i class="bi bi-person-circle"></i>
+                        <span id="username">加载中...</span>
+                    </span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/history.html">历史记录</a>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-outline-danger" id="logoutBtn">登出</button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- 主容器 -->
+<div class="container py-5 mt-5">
     <div class="main-card card">
         <!-- 头部 -->
         <div class="card-header text-center">
             <h1 class="text-white mb-0">
-                <i class="bi bi-geo-alt"></i> 轨迹数据压缩系统
+                <i class="bi bi-geo-alt"></i> 轨迹数据流式压缩系统
             </h1>
         </div>
 
         <!-- 主体内容 -->
         <div class="card-body p-4">
-            <!-- 数据源选项卡 -->
-            <ul class="nav nav-tabs" id="dataSourceTabs">
-                <li class="nav-item">
-                    <a class="nav-link active" data-bs-toggle="tab" href="#fileTab">
-                        <i class="bi bi-file-earmark-arrow-up fs-4"></i> 文件上传
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="tab" href="#apiTab">
-                        <i class="bi bi-cloud-download fs-4"></i> API 获取
-                    </a>
-                </li>
-            </ul>
-
-            <!-- 选项卡内容 -->
-            <div class="tab-content mt-4">
-                <!-- 文件上传板块 -->
-                <div class="tab-pane fade show active" id="fileTab">
-                    <div class="drop-zone p-5 text-center" id="dropZone">
-                        <i class="bi bi-cloud-arrow-up"></i>
-                        <h4 class="mt-3 text-muted">拖放文件到此区域</h4>
-                        <p class="text-muted mb-0">支持格式: .txt, .plt, .csv, .xls, .xlsx</p>
-                        <input type="file" class="form-control d-none" id="fileInput" accept=".txt,.plt,.csv,.xls,.xlsx">
-                        <div class="file-info" id="fileInfo"></div>
-                    </div>
-                </div>
-
-                <!-- API 获取板块 -->
-                <div class="tab-pane fade" id="apiTab">
-                    <div class="input-group">
-                        <input type="url" class="form-control" placeholder="输入 GPS 数据 API 地址"
-                               aria-label="API 地址" id="apiUrl">
-                        <button class="btn btn-outline-success" type="button" id="fetchApiData">
-                            <i class="bi bi-cloud-download"></i> 获取数据
-                        </button>
-                    </div>
+            <!-- 轨迹数据上传 -->
+            <div class="mt-4">
+                <h5 class="section-heading"><i class="bi bi-file-earmark-arrow-up"></i> 轨迹数据上传</h5>
+                <div class="drop-zone p-5 text-center" id="dropZone">
+                    <i class="bi bi-cloud-arrow-up"></i>
+                    <h4 class="mt-3 text-muted">拖放文件到此区域</h4>
+                    <p class="text-muted mb-0">支持格式: .txt, .plt, .csv, .xls, .xlsx</p>
+                    <input type="file" class="form-control d-none" id="fileInput" accept=".txt,.plt,.csv,.xls,.xlsx">
+                    <div class="file-info" id="fileInfo"></div>
                 </div>
             </div>
 
-            <!-- 新增地图预览 -->
+            <!-- 轨迹预览 -->
             <div class="mt-4">
-                <h5 class="mb-3"><i class="bi bi-map"></i> 轨迹预览</h5>
+                <h5 class="section-heading"><i class="bi bi-map"></i> 轨迹预览</h5>
                 <div id="mapPreview"></div>
             </div>
 
@@ -239,6 +262,8 @@
     // 初始化地图
     const map = L.map('mapPreview').setView([39.9042, 116.4074], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    let polyline = null;
+    let coordinates = [];
 
     // 文件拖放处理
     const dropZone = document.getElementById('dropZone');
@@ -288,6 +313,28 @@
         }
     });
 
+    // 动态更新轨迹
+    function updateMap(point) {
+        if (point && point.latitude && point.longitude) {
+            coordinates.push([point.latitude, point.longitude]);
+            if (polyline) {
+                polyline.setLatLngs(coordinates);
+            } else {
+                polyline = L.polyline(coordinates, { color: 'blue' }).addTo(map);
+            }
+            map.fitBounds(polyline.getBounds());
+        }
+    }
+
+    // 清除轨迹
+    function clearMap() {
+        if (polyline) {
+            map.removeLayer(polyline);
+            polyline = null;
+        }
+        coordinates = [];
+    }
+
     // 压缩处理
     document.getElementById('compressBtn').addEventListener('click', async () => {
         const files = fileInput.files;
@@ -298,37 +345,67 @@
 
         spinner.classList.remove('d-none');
         resultCard.classList.remove('show');
+        clearMap();
 
         try {
             const formData = new FormData();
             formData.append('file', files[0]);
 
-            const response = await fetch('http://localhost:8080/api/compress', {
+            const response = await fetch('http://localhost:8080/api/stream-compress', {
                 method: 'POST',
                 body: formData
             });
 
-            const data = await response.json();
+            if (!response.ok) {
+                throw new Error('网络错误: ' + response.statusText);
+            }
 
-            // 更新性能指标
-            document.getElementById('totalPoints').textContent = data.compressionResult.totalPoints;
-            document.getElementById('compressTime').textContent =
-                data.compressionResult.averageCompressTime.toFixed(6);
-            document.getElementById('decompressTime').textContent =
-                data.compressionResult.averageDecompressTime.toFixed(6);
-            document.getElementById('compressionRatio').textContent =
-                data.compressionResult.compressionRatio.toFixed(6);
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let compressionResult = null;
+            let downloadFileBase64 = '';
 
-            // 显示下载按钮
-            const downloadBtn = document.getElementById('downloadBtn');
-            downloadBtn.onclick = () => {
-                const link = document.createElement('a');
-                link.href = `data:application/octet-stream;base64,${data.downloadFileBase64}`;
-                link.download = 'compressed.bin';
-                link.click();
-            };
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
 
-            resultCard.classList.add('show');
+                const chunk = decoder.decode(value, { stream: true });
+                const messages = chunk.split('\n').filter(msg => msg.trim());
+
+                for (const message of messages) {
+                    try {
+                        const data = JSON.parse(message);
+                        if (data.type === 'point') {
+                            updateMap({ latitude: data.latitude, longitude: data.longitude });
+                        } else if (data.type === 'result') {
+                            compressionResult = data.compressionResult;
+                            downloadFileBase64 = data.downloadFileBase64;
+                        }
+                    } catch (e) {
+                        console.error('解析错误:', e, message);
+                    }
+                }
+            }
+
+            if (compressionResult) {
+                document.getElementById('totalPoints').textContent = compressionResult.totalPoints;
+                document.getElementById('compressTime').textContent =
+                    compressionResult.averageCompressTime.toFixed(6);
+                document.getElementById('decompressTime').textContent =
+                    compressionResult.averageDecompressTime.toFixed(6);
+                document.getElementById('compressionRatio').textContent =
+                    compressionResult.compressionRatio.toFixed(6);
+
+                const downloadBtn = document.getElementById('downloadBtn');
+                downloadBtn.onclick = () => {
+                    const link = document.createElement('a');
+                    link.href = `data:application/octet-stream;base64,${downloadFileBase64}`;
+                    link.download = 'compressed.bin';
+                    link.click();
+                };
+
+                resultCard.classList.add('show');
+            }
         } catch (error) {
             alert(`压缩失败: ${error.message}`);
         } finally {
@@ -340,6 +417,30 @@
         e.preventDefault();
         e.stopPropagation();
     }
+
+    // 检查登录状态并获取用户信息
+    fetch('/api/check')
+        .then(response => response.json())
+        .then(data => {
+            if (!data.isLoggedIn) {
+                window.location.href = '/login.html';
+            } else {
+                document.getElementById('username').textContent = data.username || '用户';
+            }
+        })
+        .catch(error => {
+            console.error('获取用户信息失败:', error);
+            window.location.href = '/login.html';
+        });
+
+    // 登出功能
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        fetch('/api/auth/logout', {
+            method: 'POST'
+        }).then(() => {
+            window.location.href = '/login.html';
+        });
+    });
 </script>
 </body>
 </html>
